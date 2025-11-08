@@ -1,3 +1,12 @@
-### To get Started:
+#### Server
 
-npm run dev cd server && npx nodemon server.js
+cd server && npx nodemon server.js 
+database can be viewed through pgadmin4
+
+http://localhost:3000/api/games
+
+### Frontend
+
+npm run dev
+
+http://localhost:5173/

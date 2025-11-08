@@ -9,6 +9,7 @@ const port = 3000;
 
 // Routes
 import gamesRouter from './routes/games.router.js';
+import usersRouter from './routes/users.router.js';
 
 // Express Middleware
 app.use(express.json());
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/games', gamesRouter);
+app.use('/api/users', usersRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

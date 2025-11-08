@@ -1,9 +1,9 @@
-import express from "express";
-import pool from "../modules/pool.js";
+import express from 'express';
+import pool from '../modules/pool.js';
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get('/', (req, res) => {
   const queryText = `SELECT * FROM "games";`;
   pool
     .query(queryText)
