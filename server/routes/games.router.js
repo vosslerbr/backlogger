@@ -1,7 +1,8 @@
+//* ROUTES FOR GAMES TABLE
+
 //Import
 import express from 'express';
 import pool from '../modules/pool.js';
-import { Connection } from 'pg';
 
 // Mount
 const router = express.Router();
@@ -9,41 +10,45 @@ const router = express.Router();
 //Middleware
 router.use(express.json());
 
-// Create
+//*CREATE
 
-// Post  api/games/create
-
+//^POST api/games
+// Creates new game in games table
 router.post('/', async (req, res) => {
   const { title, description, image, genre } = req.body;
 
-  // basic validation
+  // Validation
   if (!title || !description || !image || !genre) {
-    console.log(req.body);
-
+    console.error(`Error validating request - Request body: ${req.body}`);
     return res.sendStatus(400);
   }
-
-  const queryText = `
+  // SQL
+  const query = `
       INSERT INTO games (title, description, image, genre)
       VALUES ($1, $2, $3, $4);
     `;
 
+  //Query DB
   try {
-    await pool.query(queryText, [title, description, image, genre]);
-    return res.sendStatus(201);
+    await pool.query(query, [title, description, image, genre]);
+    return res.status(201).json({ added: req.body });
   } catch (error) {
     console.error('Error inserting game', error);
     return res.sendStatus(500);
   }
 });
 
-// Read
+//*READ
 
-// GET api/games - returns all games
+//^GET api/games
+//Returns all games
 router.get('/', (req, res) => {
-  const queryText = `SELECT * FROM "games";`;
+  // SQL
+  const query = `SELECT * FROM "games";`;
+
+  // Query DB
   pool
-    .query(queryText)
+    .query(query)
     .then((result) => res.send(result.rows))
     .catch((error) => {
       console.log(error);
@@ -51,4 +56,120 @@ router.get('/', (req, res) => {
     });
 });
 
+//^ GET api/games/search/title
+// Returns fuzzy-match based on title
+router.get('/search/title', async (req, res) => {
+  //Deconstruct title from quest
+  const { title } = req.body;
+
+  // SQL
+  const query = `SELECT * FROM "games" WHERE title LIKE ($1 || '%');`;
+
+  // Validation
+  if (typeof title !== 'string' || !title.trim()) {
+    return res
+      .status(400)
+      .json({ error: 'Title must be a String', request: req.body });
+  }
+
+  // Query DB
+  await pool
+    .query(query, [title])
+    .then((result) => res.send(result.rows))
+    .catch((error) => {
+      console.log(error);
+      res.sendStatus(500);
+    });
+});
+
+// Returns all games by Genre
+router.get('/search/genre', async (req, res) => {
+  // Deconstruct genre from request body
+  const { genre } = req.body;
+
+  // SQL
+  const query = `SELECT * FROM "games" WHERE genre = $1;`;
+
+  // Validation
+  if (typeof genre !== 'string' || !genre.trim()) {
+    return res.status(400).json({ error: 'genre is not a string' });
+  }
+  // Query DB
+  await pool
+    .query(query, [genre])
+    .then((result) => res.send(result.rows))
+    .catch((error) => {
+      console.log(error);
+      res.sendStatus(500);
+    });
+});
+
+//* UPDATE
+
+//^ PUT api/games/update/
+// Update all columns for ID
+router.get('/update', (req, res) => {
+  //Deconstruct from post body
+  const { id, title, description, image, genre } = req.body;
+
+  //TODO : Test validation
+  // Validation
+  // Check if ID is empty or NAN, or missing
+  if (!id || typeof id !== 'number' || !id.trim()) {
+    return res.status(400).json({
+      error: 'Improper ID - either missing, empty, or NAN',
+      id: `${id}`,
+    });
+  }
+  // Check if title is empty, missing, or not a string
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return res.status(400).json({
+      error: 'Improper Title - title is either missing, empty, or not a string',
+      title: `${title}`,
+    });
+  }
+  //Check if description is empty, not a string, or missing
+  if (!description || typeof description !== 'string' || !description.trim()) {
+    return res.status(400).json({
+      error:
+        'Improper Description - description is either missing, empty, or not a string',
+      description: `${description}`,
+    });
+  }
+  //Check if image is empty, not a string, or missing
+  if (!image || typeof image !== 'string' || !image.trim()) {
+    return res.status(400).json({
+      error: 'Improper image - image is either missing, empty, or not a string',
+      image: `${image}`,
+    });
+  }
+  //Check if  genre is empty, not a string, or missing
+  if (!genre || typeof genre !== 'string' || !genre.trim()) {
+    return res.status(400).json({
+      error: 'Improper genre - genre is either missing, empty, or not a string',
+      genre: `${genre}`,
+    });
+  }
+});
+
+//^ PUT api/games/update/title
+// Update title for ID
+
+//^ PUT api/games/update/description
+// Update description for ID
+
+//^ PUT api/games/update/genre
+// Update genre for ID
+
+//^ PUT api/games/update/image
+// Update image for ID
+
 export default router;
+
+// //template
+// router.get('route', (req, res) => {
+//   // Deconstruct genre from request body
+//   // SQL
+//   // Validation
+//   // Query DB
+// });
