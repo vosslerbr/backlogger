@@ -108,14 +108,13 @@ router.get('/search/genre', async (req, res) => {
 
 //^ PUT api/games/update/
 // Update all columns for ID
-router.get('/update', (req, res) => {
+router.put('/update', async (req, res) => {
   //Deconstruct from post body
   const { id, title, description, image, genre } = req.body;
 
-  //TODO : Test validation
   // Validation
   // Check if ID is empty or NAN, or missing
-  if (!id || typeof id !== 'number' || !id.trim()) {
+  if (!id || typeof id !== 'number') {
     return res.status(400).json({
       error: 'Improper ID - either missing, empty, or NAN',
       id: `${id}`,
@@ -150,10 +149,53 @@ router.get('/update', (req, res) => {
       genre: `${genre}`,
     });
   }
+
+  // SQL
+  const query =
+    'UPDATE games SET title = $2, description = $3, image = $4, genre = $5 WHERE id = $1';
+
+  //Query DB
+  try {
+    await pool.query(query, [id, title, description, image, genre]);
+    return res.status(201).json({
+      message: `${id} updated`,
+      data: `title: ${title}, description: ${description}, image: ${image}, genre: ${genre}`,
+    });
+  } catch (error) {
+    console.error('Error updating game', error);
+    return res.sendStatus(500);
+  }
 });
 
 //^ PUT api/games/update/title
 // Update title for ID
+//TODO - Test
+router.put('update/title', async (req, res) => {
+  // Deconstruct from post body
+  const { id, title } = req.body;
+
+  //Validation
+  //Check if ID is empty/NAN or if title is empty/not a string
+  if (!id || !title || typeof id !== 'number' || typeof title !== 'string') {
+    return res.status(400).json({
+      error: 'Malformed request - check ID (is number) and title (is string)',
+      request: `id: ${id}, title: ${title}`,
+    });
+  }
+  //SQL
+  const query = 'UPDATE games SET title = $2 WHERE id = $1';
+
+  try {
+    await pool.query(query, [id, title]);
+    return res.status(201).json({
+      message: `${id} updated`,
+      data: `title: ${title}`,
+    });
+  } catch (error) {
+    console.error('Error updating game title', error);
+    return res.sendStatus(500);
+  }
+});
 
 //^ PUT api/games/update/description
 // Update description for ID
