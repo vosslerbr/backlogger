@@ -169,8 +169,8 @@ router.put('/update', async (req, res) => {
 
 //^ PUT api/games/update/title
 // Update title for ID
-//TODO - Test
-router.put('update/title', async (req, res) => {
+
+router.put('/update/title', async (req, res) => {
   // Deconstruct from post body
   const { id, title } = req.body;
 
@@ -188,7 +188,7 @@ router.put('update/title', async (req, res) => {
   try {
     await pool.query(query, [id, title]);
     return res.status(201).json({
-      message: `${id} updated`,
+      message: `ID ${id} updated`,
       data: `title: ${title}`,
     });
   } catch (error) {
@@ -200,11 +200,83 @@ router.put('update/title', async (req, res) => {
 //^ PUT api/games/update/description
 // Update description for ID
 
-//^ PUT api/games/update/genre
-// Update genre for ID
+router.put(`/update/description`, async (req, res) => {
+  const { id, description } = req.body;
+
+  if (
+    !id ||
+    typeof id !== 'number' ||
+    !description ||
+    typeof description !== 'string'
+  ) {
+    return res.status(400).json({
+      error:
+        'Malformed request - check ID (is number) and description (is string)',
+    });
+  }
+  const query = 'UPDATE games SET description = $2 WHERE id = $1';
+
+  try {
+    await pool.query(query, [id, description]);
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `Description: ${description}`,
+    });
+  } catch (error) {
+    console.error('Error updating description', error);
+    return res.sendStatus(500);
+  }
+});
 
 //^ PUT api/games/update/image
 // Update image for ID
+
+router.put(`/update/image`, async (req, res) => {
+  const { id, image } = req.body;
+
+  if (!id || typeof id !== 'number' || !image || typeof image !== 'string') {
+    return res.status(400).json({
+      error: 'Malformed request - check ID (is number) and image (is string)',
+    });
+  }
+  const query = 'UPDATE games SET image = $2 WHERE id = $1';
+
+  try {
+    await pool.query(query, [id, image]);
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `Image: ${image}`,
+    });
+  } catch (error) {
+    console.error('Error updating image', error);
+    return res.sendStatus(500);
+  }
+});
+
+//^ PUT api/games/update/genre
+// Update genre for ID
+
+router.put(`/update/genre`, async (req, res) => {
+  const { id, genre } = req.body;
+
+  if (!id || typeof id !== 'number' || !genre || typeof genre !== 'string') {
+    return res.status(400).json({
+      error: 'Malformed request - check ID (is number) and genre (is string)',
+    });
+  }
+  const query = 'UPDATE games SET genre = $2 WHERE id = $1';
+
+  try {
+    await pool.query(query, [id, genre]);
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `genre: ${genre}`,
+    });
+  } catch (error) {
+    console.error('Error updating genre', error);
+    return res.sendStatus(500);
+  }
+});
 
 export default router;
 
