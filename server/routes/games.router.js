@@ -120,35 +120,6 @@ router.put('/update', async (req, res) => {
       id: `${id}`,
     });
   }
-  // Check if title is empty, missing, or not a string
-  if (!title || typeof title !== 'string' || !title.trim()) {
-    return res.status(400).json({
-      error: 'Improper Title - title is either missing, empty, or not a string',
-      title: `${title}`,
-    });
-  }
-  //Check if description is empty, not a string, or missing
-  if (!description || typeof description !== 'string' || !description.trim()) {
-    return res.status(400).json({
-      error:
-        'Improper Description - description is either missing, empty, or not a string',
-      description: `${description}`,
-    });
-  }
-  //Check if image is empty, not a string, or missing
-  if (!image || typeof image !== 'string' || !image.trim()) {
-    return res.status(400).json({
-      error: 'Improper image - image is either missing, empty, or not a string',
-      image: `${image}`,
-    });
-  }
-  //Check if  genre is empty, not a string, or missing
-  if (!genre || typeof genre !== 'string' || !genre.trim()) {
-    return res.status(400).json({
-      error: 'Improper genre - genre is either missing, empty, or not a string',
-      genre: `${genre}`,
-    });
-  }
 
   // SQL
   const query =
@@ -176,7 +147,7 @@ router.put('/update/title', async (req, res) => {
 
   //Validation
   //Check if ID is empty/NAN or if title is empty/not a string
-  if (!id || !title || typeof id !== 'number' || typeof title !== 'string') {
+  if (!id || typeof id !== 'number') {
     return res.status(400).json({
       error: 'Malformed request - check ID (is number) and title (is string)',
       request: `id: ${id}, title: ${title}`,
@@ -203,12 +174,7 @@ router.put('/update/title', async (req, res) => {
 router.put(`/update/description`, async (req, res) => {
   const { id, description } = req.body;
 
-  if (
-    !id ||
-    typeof id !== 'number' ||
-    !description ||
-    typeof description !== 'string'
-  ) {
+  if (!id || typeof id !== 'number') {
     return res.status(400).json({
       error:
         'Malformed request - check ID (is number) and description (is string)',
@@ -234,7 +200,7 @@ router.put(`/update/description`, async (req, res) => {
 router.put(`/update/image`, async (req, res) => {
   const { id, image } = req.body;
 
-  if (!id || typeof id !== 'number' || !image || typeof image !== 'string') {
+  if (!id || typeof id !== 'number') {
     return res.status(400).json({
       error: 'Malformed request - check ID (is number) and image (is string)',
     });
@@ -277,6 +243,9 @@ router.put(`/update/genre`, async (req, res) => {
     return res.sendStatus(500);
   }
 });
+
+//^ DELETE api/games/delete
+// Delete entire game
 
 export default router;
 
