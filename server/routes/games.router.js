@@ -82,6 +82,7 @@ router.get('/search/title', async (req, res) => {
     });
 });
 
+//^ GET api/games/search/genre
 // Returns all games by Genre
 router.get('/search/genre', async (req, res) => {
   // Deconstruct genre from request body
@@ -103,6 +104,10 @@ router.get('/search/genre', async (req, res) => {
       res.sendStatus(500);
     });
 });
+
+//TODO Create ID lookup by title
+//^ GET api/games/search/id_lookup
+// Returns game ID by title
 
 //* UPDATE
 
@@ -244,8 +249,49 @@ router.put(`/update/genre`, async (req, res) => {
   }
 });
 
+// * DELETE
+
 //^ DELETE api/games/delete
 // Delete entire game
+
+router.delete(`/delete`, async (req, res) => {
+  console.log(req.body);
+  const { id } = req.body;
+
+  if (!id || typeof id !== 'number') {
+    return res.status(400).json({
+      error: 'Malformed request - check ID (is number)',
+      ID: `${id}`,
+    });
+  }
+  // Delete the row and return the deleted row if present
+  const query = 'DELETE FROM games WHERE id = $1 RETURNING *';
+
+  try {
+    const result = await pool.query(query, [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: `Row ${id} not found` });
+    }
+    return res
+      .status(200)
+      .json({ message: `Row ${id} deleted`, deleted: result.rows[0] });
+  } catch (error) {
+    console.error('Error deleting game', error);
+    return res.sendStatus(500);
+  }
+});
+
+//^DELETE api/games/delete/title
+//Delete title from game
+
+//^DELETE api/games/delete/description
+//Delete description from game
+
+//^DELETE api/games/delete/image
+//Delete image from game
+
+//^DELETE api/games/delete/genre
+//Delete genre from game
 
 export default router;
 
