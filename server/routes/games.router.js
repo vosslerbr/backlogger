@@ -15,10 +15,21 @@ router.use(express.json());
 //^POST api/games
 // Creates new game in games table
 router.post('/', async (req, res) => {
+  //Validate if we have an empty request body
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
   const { title, description, image, genre } = req.body;
 
-  // Validation
-  if (!title || !description || !image || !genre) {
+  // Validate if our fields are all strings
+  if (
+    typeof title !== 'string' &&
+    typeof description !== 'string' &&
+    typeof image !== 'string' &&
+    typeof genre !== 'string'
+  ) {
     console.error(`Error validating request - Request body: ${req.body}`);
     return res.sendStatus(400);
   }
@@ -56,9 +67,15 @@ router.get('/', (req, res) => {
     });
 });
 
+//Todo - This doesn't always work. If I end up using it, needs a refactor
 //^ GET api/games/search/title
 // Returns fuzzy-match based on title
 router.get('/search/title', async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
   //Deconstruct title from quest
   const { title } = req.body;
 
@@ -69,7 +86,7 @@ router.get('/search/title', async (req, res) => {
   if (typeof title !== 'string' || !title.trim()) {
     return res
       .status(400)
-      .json({ error: 'Title must be a String', request: req.body });
+      .json({ error: 'Title must be a String', title: title });
   }
 
   // Query DB
@@ -85,6 +102,11 @@ router.get('/search/title', async (req, res) => {
 //^ GET api/games/search/genre
 // Returns all games by Genre
 router.get('/search/genre', async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
   // Deconstruct genre from request body
   const { genre } = req.body;
 
@@ -114,12 +136,29 @@ router.get('/search/genre', async (req, res) => {
 //^ PUT api/games/update/
 // Update all columns for ID
 router.put('/update', async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
   //Deconstruct from post body
   const { id, title, description, image, genre } = req.body;
 
   // Validation
   // Check if ID is empty or NAN, or missing
-  if (!id || typeof id !== 'number') {
+  // TODO - uhh start here
+  if (
+    typeof id !== 'number' &&
+    !id &&
+    typeof title !== 'string' &&
+    !title &&
+    typeof description !== 'string' &&
+    !description &&
+    typeof image !== 'string' &&
+    !image &&
+    typeof genre !== 'string' &&
+    !genre
+  ) {
     return res.status(400).json({
       error: 'Improper ID - either missing, empty, or NAN',
       id: `${id}`,
@@ -147,12 +186,20 @@ router.put('/update', async (req, res) => {
 // Update title for ID
 
 router.put('/update/title', async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
+
   // Deconstruct from post body
   const { id, title } = req.body;
 
   //Validation
   //Check if ID is empty/NAN or if title is empty/not a string
-  if (!id || typeof id !== 'number') {
+
+  //todo - Update this to include title, also, use an && instead of or
+  if (typeof id !== 'number') {
     return res.status(400).json({
       error: 'Malformed request - check ID (is number) and title (is string)',
       request: `id: ${id}, title: ${title}`,
@@ -177,6 +224,12 @@ router.put('/update/title', async (req, res) => {
 // Update description for ID
 
 router.put(`/update/description`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
+
   const { id, description } = req.body;
 
   if (!id || typeof id !== 'number') {
@@ -203,6 +256,12 @@ router.put(`/update/description`, async (req, res) => {
 // Update image for ID
 
 router.put(`/update/image`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
+
   const { id, image } = req.body;
 
   if (!id || typeof id !== 'number') {
@@ -228,6 +287,12 @@ router.put(`/update/image`, async (req, res) => {
 // Update genre for ID
 
 router.put(`/update/genre`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
+
   const { id, genre } = req.body;
 
   if (!id || typeof id !== 'number' || !genre || typeof genre !== 'string') {
@@ -235,10 +300,12 @@ router.put(`/update/genre`, async (req, res) => {
       error: 'Malformed request - check ID (is number) and genre (is string)',
     });
   }
+
   const query = 'UPDATE games SET genre = $2 WHERE id = $1';
 
   try {
     await pool.query(query, [id, genre]);
+
     return res.status(201).json({
       message: `ID: ${id} updated`,
       data: `genre: ${genre}`,
@@ -255,7 +322,12 @@ router.put(`/update/genre`, async (req, res) => {
 // Delete entire game
 
 router.delete(`/delete`, async (req, res) => {
-  console.log(req.body);
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
+
   const { id } = req.body;
 
   if (!id || typeof id !== 'number') {
@@ -282,8 +354,38 @@ router.delete(`/delete`, async (req, res) => {
 });
 
 //^DELETE api/games/delete/title
-//Delete title from game
+//Delete title from game (technically, update row value to "")
 
+router.put(`/delete/title`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: 'Request body empty',
+    });
+  }
+
+  const { id } = req.body;
+
+  if (!id || typeof id !== 'number' || !title || typeof title !== 'string') {
+    return res.status(400).json({
+      error: 'Malformed request - check ID is number and title is string',
+      id: id,
+      string: title,
+    });
+  }
+
+  //inested of null, an empty string?
+  const query = `UPDATE games SET title = '' WHERE ID = $1 `;
+
+  try {
+    await pool.query(query, [id]);
+    return res.status(201).json({
+      message: `title of ID ${id} deleteed`,
+    });
+  } catch (error) {
+    console.error('Error updating game', error);
+    return res.sendStatus(500);
+  }
+});
 //^DELETE api/games/delete/description
 //Delete description from game
 
@@ -294,11 +396,3 @@ router.delete(`/delete`, async (req, res) => {
 //Delete genre from game
 
 export default router;
-
-// //template
-// router.get('route', (req, res) => {
-//   // Deconstruct genre from request body
-//   // SQL
-//   // Validation
-//   // Query DB
-// });
