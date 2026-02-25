@@ -1,6 +1,6 @@
 // Connects db to project
-import pg from 'pg';
-import dotenv from 'dotenv';
+import pg from "pg";
+import dotenv from "dotenv";
 dotenv.config();
 
 //env
@@ -21,13 +21,15 @@ if (process.env.DATABASE_URL) {
 // When we're running this app on our own computer
 // we'll connect to the postgres database that is
 // also running on our computer (localhost)
+
+//! Heads up - depending on where I'm running dev, the port is different. On mac, it's 5433, on windows, 5432
 else {
   pool = new pg.Pool({
     user: user,
     password: pass,
-    host: 'localhost',
-    port: 5432,
-    database: 'backlogger',
+    host: "localhost",
+    port: 5433,
+    database: "backlogger",
   });
 }
 
