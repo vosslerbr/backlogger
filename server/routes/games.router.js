@@ -423,7 +423,67 @@ router.delete(`/delete/description`, async (req, res) => {
 //^DELETE api/games/delete/image
 //Delete image from game
 
+router.delete(`/delete/image`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({
+      error: "Malformed request - check ID is number",
+      id: id,
+    });
+  }
+
+  //inested of null, an empty string?
+  const query = `UPDATE games SET image = '' WHERE ID = $1 `;
+
+  try {
+    await pool.query(query, [id]);
+    return res.status(201).json({
+      message: `image of ID ${id} deleted`,
+    });
+  } catch (error) {
+    console.error("Error updating game", error);
+    return res.sendStatus(500);
+  }
+});
+
 //^DELETE api/games/delete/genre
 //Delete genre from game
+
+router.delete(`/delete/genre`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({
+      error: "Malformed request - check ID is number",
+      id: id,
+    });
+  }
+
+  //inested of null, an empty string?
+  const query = `UPDATE games SET genre = '' WHERE ID = $1 `;
+
+  try {
+    await pool.query(query, [id]);
+    return res.status(201).json({
+      message: `genre of ID ${id} deleted`,
+    });
+  } catch (error) {
+    console.error("Error updating game", error);
+    return res.sendStatus(500);
+  }
+});
 
 export default router;
