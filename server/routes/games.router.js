@@ -357,6 +357,72 @@ router.put(`/update/genre`, async (req, res) => {
   }
 });
 
+//^ PUT api/games/update/status
+// Update status for ID
+
+router.put(`/update/status`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  const { id, status } = req.body;
+
+  if (!id || typeof id !== "number" || !status || typeof status !== "string") {
+    return res.status(400).json({
+      error: "Malformed request - check ID (is number) and status (is string)",
+    });
+  }
+
+  const query = "UPDATE games SET status = $2 WHERE id = $1";
+
+  try {
+    await pool.query(query, [id, status]);
+
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `status: ${status}`,
+    });
+  } catch (error) {
+    console.error("Error updating status", error);
+    return res.sendStatus(500);
+  }
+});
+
+//^ PUT api/games/update/notes
+// Update notes for ID
+
+router.put(`/update/notes`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  const { id, notes } = req.body;
+
+  if (!id || typeof id !== "number" || !notes || typeof notes !== "string") {
+    return res.status(400).json({
+      error: "Malformed request - check ID (is number) and notes (is string)",
+    });
+  }
+
+  const query = "UPDATE games SET notes = $2 WHERE id = $1";
+
+  try {
+    await pool.query(query, [id, notes]);
+
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `notes: ${notes}`,
+    });
+  } catch (error) {
+    console.error("Error updating notes", error);
+    return res.sendStatus(500);
+  }
+});
+
 // * DELETE
 
 //^ DELETE api/games/delete
