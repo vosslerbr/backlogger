@@ -14,34 +14,36 @@ router.use(express.json());
 
 //^POST api/games
 // Creates new game in games table
-router.post("/", async (req, res) => {
+router.post("/new", async (req, res) => {
   //Validate if we have an empty request body
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
     });
   }
-  const { title, description, image, genre } = req.body;
+
+  const { title, description, image, genre, status, notes } = req.body;
 
   // Validate if our fields are all strings
   if (
     typeof title !== "string" &&
     typeof description !== "string" &&
     typeof image !== "string" &&
-    typeof genre !== "string"
+    typeof genre !== "string" &&
+    typeof status !== "string"
   ) {
     console.error(`Error validating request - Request body: ${req.body}`);
     return res.sendStatus(400);
   }
   // SQL
   const query = `
-      INSERT INTO games (title, description, image, genre)
-      VALUES ($1, $2, $3, $4);
+      INSERT INTO games (title, description, image, genre, status, notes )
+      VALUES ($1, $2, $3, $4, $5, $6);
     `;
 
   //Query DB
   try {
-    await pool.query(query, [title, description, image, genre]);
+    await pool.query(query, [title, description, image, genre, status, notes]);
     return res.status(201).json({ added: req.body });
   } catch (error) {
     console.error("Error inserting game", error);
@@ -131,6 +133,37 @@ router.get("/search/genre", async (req, res) => {
 //^ GET api/games/search/id_lookup
 // Returns game ID by title
 
+//^ GET api/games/search/status
+// returns games based on status - in-progress, backlogged, complete
+
+router.get("/search/status", async (req, res) => {
+  //validate body
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  //deconstruct
+  const { status } = req.body;
+
+  //validate status
+  if (typeof status !== "string" || !status.trim()) {
+    return res.status(400).json({ error: "status is not a string" });
+  }
+
+  //create query
+  const query = "SELECT * FROM games WHERE status ILIKE $1;";
+
+  //Query DB
+  try {
+    const result = await pool.query(query, [status]);
+    return res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error searching games by status", error);
+    return res.sendStatus(500);
+  }
+});
 //* UPDATE
 
 //^ PUT api/games/update/

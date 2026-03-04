@@ -2,6 +2,8 @@
 -- Run this in pgAdmin4 or psql after creating the tables from `database.sql`.
 
 -- Create base Tables
+DROP TABLE IF EXISTS "games";
+
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" serial NOT NULL UNIQUE,
 	"username" varchar(255) NOT NULL,
@@ -15,6 +17,8 @@ CREATE TABLE IF NOT EXISTS "games" (
 	"description" varchar(255),
 	"image" varchar(255),
 	"genre" varchar(255),
+	"status" varchar(50),
+	"notes" text,
 	PRIMARY KEY ("id")
 );
 
@@ -27,9 +31,9 @@ CREATE TABLE IF NOT EXISTS "users_games" (
 
 
 -- Optional: clear existing data (uncomment if you want a clean slate)
--- TRUNCATE TABLE "users_games" RESTART IDENTITY CASCADE;
--- TRUNCATE TABLE "games" RESTART IDENTITY CASCADE;
--- TRUNCATE TABLE "users" RESTART IDENTITY CASCADE;
+ TRUNCATE TABLE "users_games" RESTART IDENTITY CASCADE;
+ TRUNCATE TABLE "games" RESTART IDENTITY CASCADE;
+ TRUNCATE TABLE "users" RESTART IDENTITY CASCADE;
 
 -- Insert users (6 rows)
 INSERT INTO "users" ("username", "email") VALUES
@@ -41,17 +45,17 @@ INSERT INTO "users" ("username", "email") VALUES
   ('frank', 'frank@example.com');
 
 -- Insert games (10 rows)
-INSERT INTO "games" ("title", "description", "image", "genre") VALUES
-  ('Starlight Odyssey', 'A space exploration RPG with ship-building mechanics.', 'starlight.jpg', 'RPG'),
-  ('Pixel Rally', 'Top-down arcade racing with pixel graphics and tight controls.', 'pixel_rally.png', 'Racing'),
-  ('Mystic Manor', 'A puzzle-adventure set in a haunted mansion.', 'mystic_manor.jpg', 'Adventure'),
-  ('Cyberstrike 2077', 'Fast-paced cyberpunk FPS with neon visuals.', 'cyberstrike.jpg', 'Shooter'),
-  ('Farmstead', 'Relaxing farming sim with seasons and crafting.', 'farmstead.png', 'Simulation'),
-  ('Dungeon Delvers', 'Co-op dungeon crawler with procedurally generated levels.', 'dungeon_delvers.jpg', 'Roguelike'),
-  ('Skybound Saga', 'Platformer with gliding mechanics and colorful worlds.', 'skybound.png', 'Platformer'),
-  ('Chef’s Quest', 'Time-management cooking game with thousands of recipes.', 'chefs_quest.jpg', 'Casual'),
-  ('NeoChess', 'A futuristic chess variant with special pieces and powers.', 'neochess.png', 'Strategy'),
-  ('Hidden Trails', 'A hidden object game with story-driven scenes.', 'hidden_trails.jpg', 'Puzzle');
+INSERT INTO "games" ("title", "description", "image", "genre", "status", "notes") VALUES
+  ('Starlight Odyssey', 'A space exploration RPG with ship-building mechanics.', 'starlight.jpg', 'RPG', 'in-progress', 'The game is currently in active development.'),
+  ('Pixel Rally', 'Top-down arcade racing with pixel graphics and tight controls.', 'pixel_rally.png', 'Racing', 'backlogged', 'The game is currently in active development.'),
+  ('Mystic Manor', 'A puzzle-adventure set in a haunted mansion.', 'mystic_manor.jpg', 'Adventure', 'backlogged', 'The game is currently in active development.'),
+  ('Cyberstrike 2077', 'Fast-paced cyberpunk FPS with neon visuals.', 'cyberstrike.jpg', 'Shooter', 'in-progress', 'The game is currently in active development.'),
+  ('Farmstead', 'Relaxing farming sim with seasons and crafting.', 'farmstead.png', 'Simulation', 'backlogged', 'The game is currently in active development.'),
+  ('Dungeon Delvers', 'Co-op dungeon crawler with procedurally generated levels.', 'dungeon_delvers.jpg', 'Dungeon', 'in-progress', 'The game is currently in active development.'),
+  ('Skybound Saga', 'Platformer with gliding mechanics and colorful worlds.', 'skybound.png', 'Platformer', 'in-progress', 'The game is currently in active development.'),
+  ('Chef’s Quest', 'Time-management cooking game with thousands of recipes.', 'chefs_quest.jpg', 'Casual', 'in-progress', 'The game is currently in active development.'),
+  ('NeoChess', 'A futuristic chess variant with special pieces and powers.', 'neochess.png', 'Strategy', 'complete', 'The game is currently in active development.'),
+  ('Hidden Trails', 'A hidden object game with story-driven scenes.', 'hidden_trails.jpg', 'Puzzle', 'complete', 'The game is currently in active development');
 
 -- Insert user-game relationships (12 rows)
 -- These reference user IDs and game IDs as they will be assigned (1..6 for users, 1..10 for games)
