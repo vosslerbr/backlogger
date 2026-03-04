@@ -14,34 +14,36 @@ router.use(express.json());
 
 //^POST api/games
 // Creates new game in games table
-router.post("/", async (req, res) => {
+router.post("/new", async (req, res) => {
   //Validate if we have an empty request body
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
     });
   }
-  const { title, description, image, genre } = req.body;
+
+  const { title, description, image, genre, status, notes } = req.body;
 
   // Validate if our fields are all strings
   if (
     typeof title !== "string" &&
     typeof description !== "string" &&
     typeof image !== "string" &&
-    typeof genre !== "string"
+    typeof genre !== "string" &&
+    typeof status !== "string"
   ) {
     console.error(`Error validating request - Request body: ${req.body}`);
     return res.sendStatus(400);
   }
   // SQL
   const query = `
-      INSERT INTO games (title, description, image, genre)
-      VALUES ($1, $2, $3, $4);
+      INSERT INTO games (title, description, image, genre, status, notes )
+      VALUES ($1, $2, $3, $4, $5, $6);
     `;
 
   //Query DB
   try {
-    await pool.query(query, [title, description, image, genre]);
+    await pool.query(query, [title, description, image, genre, status, notes]);
     return res.status(201).json({ added: req.body });
   } catch (error) {
     console.error("Error inserting game", error);
@@ -131,6 +133,37 @@ router.get("/search/genre", async (req, res) => {
 //^ GET api/games/search/id_lookup
 // Returns game ID by title
 
+//^ GET api/games/search/status
+// returns games based on status - in-progress, backlogged, complete
+
+router.get("/search/status", async (req, res) => {
+  //validate body
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  //deconstruct
+  const { status } = req.body;
+
+  //validate status
+  if (typeof status !== "string" || !status.trim()) {
+    return res.status(400).json({ error: "status is not a string" });
+  }
+
+  //create query
+  const query = "SELECT * FROM games WHERE status ILIKE $1;";
+
+  //Query DB
+  try {
+    const result = await pool.query(query, [status]);
+    return res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error searching games by status", error);
+    return res.sendStatus(500);
+  }
+});
 //* UPDATE
 
 //^ PUT api/games/update/
@@ -142,11 +175,11 @@ router.put("/update", async (req, res) => {
     });
   }
   //Deconstruct from post body
-  const { id, title, description, image, genre } = req.body;
+  const { id, title, description, image, genre, status, notes } = req.body;
 
   // Validation
   // Check if ID is empty or NAN, or missing
-  // TODO - uhh start here
+
   if (
     typeof id !== "number" &&
     !id &&
@@ -167,14 +200,22 @@ router.put("/update", async (req, res) => {
 
   // SQL
   const query =
-    "UPDATE games SET title = $2, description = $3, image = $4, genre = $5 WHERE id = $1";
+    "UPDATE games SET title = $2, description = $3, image = $4, genre = $5, status = $6, notes = $7 WHERE id = $1";
 
   //Query DB
   try {
-    await pool.query(query, [id, title, description, image, genre]);
+    await pool.query(query, [
+      id,
+      title,
+      description,
+      image,
+      genre,
+      status,
+      notes,
+    ]);
     return res.status(201).json({
       message: `${id} updated`,
-      data: `title: ${title}, description: ${description}, image: ${image}, genre: ${genre}`,
+      data: `title: ${title}, description: ${description}, image: ${image}, genre: ${genre}, status: ${status}, notes: ${notes}`,
     });
   } catch (error) {
     console.error("Error updating game", error);
@@ -312,6 +353,72 @@ router.put(`/update/genre`, async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating genre", error);
+    return res.sendStatus(500);
+  }
+});
+
+//^ PUT api/games/update/status
+// Update status for ID
+
+router.put(`/update/status`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  const { id, status } = req.body;
+
+  if (!id || typeof id !== "number" || !status || typeof status !== "string") {
+    return res.status(400).json({
+      error: "Malformed request - check ID (is number) and status (is string)",
+    });
+  }
+
+  const query = "UPDATE games SET status = $2 WHERE id = $1";
+
+  try {
+    await pool.query(query, [id, status]);
+
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `status: ${status}`,
+    });
+  } catch (error) {
+    console.error("Error updating status", error);
+    return res.sendStatus(500);
+  }
+});
+
+//^ PUT api/games/update/notes
+// Update notes for ID
+
+router.put(`/update/notes`, async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({
+      message: "Request body empty",
+    });
+  }
+
+  const { id, notes } = req.body;
+
+  if (!id || typeof id !== "number" || !notes || typeof notes !== "string") {
+    return res.status(400).json({
+      error: "Malformed request - check ID (is number) and notes (is string)",
+    });
+  }
+
+  const query = "UPDATE games SET notes = $2 WHERE id = $1";
+
+  try {
+    await pool.query(query, [id, notes]);
+
+    return res.status(201).json({
+      message: `ID: ${id} updated`,
+      data: `notes: ${notes}`,
+    });
+  } catch (error) {
+    console.error("Error updating notes", error);
     return res.sendStatus(500);
   }
 });
