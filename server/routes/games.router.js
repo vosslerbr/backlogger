@@ -175,11 +175,11 @@ router.put("/update", async (req, res) => {
     });
   }
   //Deconstruct from post body
-  const { id, title, description, image, genre } = req.body;
+  const { id, title, description, image, genre, status, notes } = req.body;
 
   // Validation
   // Check if ID is empty or NAN, or missing
-  // TODO - uhh start here
+
   if (
     typeof id !== "number" &&
     !id &&
@@ -200,14 +200,22 @@ router.put("/update", async (req, res) => {
 
   // SQL
   const query =
-    "UPDATE games SET title = $2, description = $3, image = $4, genre = $5 WHERE id = $1";
+    "UPDATE games SET title = $2, description = $3, image = $4, genre = $5, status = $6, notes = $7 WHERE id = $1";
 
   //Query DB
   try {
-    await pool.query(query, [id, title, description, image, genre]);
+    await pool.query(query, [
+      id,
+      title,
+      description,
+      image,
+      genre,
+      status,
+      notes,
+    ]);
     return res.status(201).json({
       message: `${id} updated`,
-      data: `title: ${title}, description: ${description}, image: ${image}, genre: ${genre}`,
+      data: `title: ${title}, description: ${description}, image: ${image}, genre: ${genre}, status: ${status}, notes: ${notes}`,
     });
   } catch (error) {
     console.error("Error updating game", error);
