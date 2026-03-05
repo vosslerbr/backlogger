@@ -69,7 +69,7 @@ router.post("/", async (req, res) => {
 //Todo - This doesn't always work. If I end up using it, needs a refactor
 //^ GET api/games/search/title
 // Returns fuzzy-match based on title
-router.get("/search/title", async (req, res) => {
+router.get("/search", async (req, res) => {
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
@@ -98,74 +98,11 @@ router.get("/search/title", async (req, res) => {
     });
 });
 
-//^ GET api/games/search/genre
-// Returns all games by Genre
-router.get("/search/genre", async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-  // Deconstruct genre from request body
-  const { genre } = req.body;
-
-  // SQL
-  const query = `SELECT * FROM "games" WHERE genre = $1;`;
-
-  // Validation
-  if (typeof genre !== "string" || !genre.trim()) {
-    return res.status(400).json({ error: "genre is not a string" });
-  }
-  // Query DB
-  await pool
-    .query(query, [genre])
-    .then((result) => res.send(result.rows))
-    .catch((error) => {
-      console.log(error);
-      res.sendStatus(500);
-    });
-});
-
-//TODO Create ID lookup by title
-//^ GET api/games/search/id_lookup
-// Returns game ID by title
-
-//^ GET api/games/search/status
-// returns games based on status - in-progress, backlogged, complete
-
-router.get("/search/status", async (req, res) => {
-  //validate body
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  //deconstruct
-  const { status } = req.body;
-
-  //validate status
-  if (typeof status !== "string" || !status.trim()) {
-    return res.status(400).json({ error: "status is not a string" });
-  }
-
-  //create query
-  const query = "SELECT * FROM games WHERE status ILIKE $1;";
-
-  //Query DB
-  try {
-    const result = await pool.query(query, [status]);
-    return res.status(200).json(result.rows);
-  } catch (error) {
-    console.error("Error searching games by status", error);
-    return res.sendStatus(500);
-  }
-});
 //* UPDATE
 
 //^ PUT api/games/update/
 // Update all columns for ID
-router.put("/", async (req, res) => {
+router.put("/:id", async (req, res) => {
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
@@ -225,7 +162,7 @@ router.put("/", async (req, res) => {
 //^ DELETE api/games/delete
 // Delete entire game
 
-router.delete(`/`, async (req, res) => {
+router.delete(`/:id`, async (req, res) => {
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
