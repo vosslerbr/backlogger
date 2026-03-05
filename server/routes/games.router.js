@@ -10,11 +10,26 @@ const router = express.Router();
 //Middleware
 router.use(express.json());
 
-//*CREATE
+//*READ
+//^GET api/games
+//Returns all games
+router.get("/", async (req, res) => {
+  // SQL
+  const query = `SELECT * FROM "games";`;
 
+  try {
+    await pool.query(query);
+    return res.send(result.rows);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+});
+
+//*CREATE
 //^POST api/games
 // Creates new game in games table
-router.post("/new", async (req, res) => {
+router.post("/", async (req, res) => {
   //Validate if we have an empty request body
   if (!req.body) {
     return res.status(400).json({
@@ -49,24 +64,6 @@ router.post("/new", async (req, res) => {
     console.error("Error inserting game", error);
     return res.sendStatus(500);
   }
-});
-
-//*READ
-
-//^GET api/games
-//Returns all games
-router.get("/", (req, res) => {
-  // SQL
-  const query = `SELECT * FROM "games";`;
-
-  // Query DB
-  pool
-    .query(query)
-    .then((result) => res.send(result.rows))
-    .catch((error) => {
-      console.log(error);
-      res.sendStatus(500);
-    });
 });
 
 //Todo - This doesn't always work. If I end up using it, needs a refactor
@@ -168,7 +165,7 @@ router.get("/search/status", async (req, res) => {
 
 //^ PUT api/games/update/
 // Update all columns for ID
-router.put("/update", async (req, res) => {
+router.put("/", async (req, res) => {
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
@@ -223,212 +220,12 @@ router.put("/update", async (req, res) => {
   }
 });
 
-//^ PUT api/games/update/title
-// Update title for ID
-
-router.put("/update/title", async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  // Deconstruct from post body
-  const { id, title } = req.body;
-
-  //Validation
-  //Check if ID is empty/NAN or if title is empty/not a string
-
-  //todo - Update this to include title, also, use an && instead of or
-  if (typeof id !== "number") {
-    return res.status(400).json({
-      error: "Malformed request - check ID (is number) and title (is string)",
-      request: `id: ${id}, title: ${title}`,
-    });
-  }
-  //SQL
-  const query = "UPDATE games SET title = $2 WHERE id = $1";
-
-  try {
-    await pool.query(query, [id, title]);
-    return res.status(201).json({
-      message: `ID ${id} updated`,
-      data: `title: ${title}`,
-    });
-  } catch (error) {
-    console.error("Error updating game title", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^ PUT api/games/update/description
-// Update description for ID
-
-router.put(`/update/description`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id, description } = req.body;
-
-  if (!id || typeof id !== "number") {
-    return res.status(400).json({
-      error:
-        "Malformed request - check ID (is number) and description (is string)",
-    });
-  }
-  const query = "UPDATE games SET description = $2 WHERE id = $1";
-
-  try {
-    await pool.query(query, [id, description]);
-    return res.status(201).json({
-      message: `ID: ${id} updated`,
-      data: `Description: ${description}`,
-    });
-  } catch (error) {
-    console.error("Error updating description", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^ PUT api/games/update/image
-// Update image for ID
-
-router.put(`/update/image`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id, image } = req.body;
-
-  if (!id || typeof id !== "number") {
-    return res.status(400).json({
-      error: "Malformed request - check ID (is number) and image (is string)",
-    });
-  }
-  const query = "UPDATE games SET image = $2 WHERE id = $1";
-
-  try {
-    await pool.query(query, [id, image]);
-    return res.status(201).json({
-      message: `ID: ${id} updated`,
-      data: `Image: ${image}`,
-    });
-  } catch (error) {
-    console.error("Error updating image", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^ PUT api/games/update/genre
-// Update genre for ID
-
-router.put(`/update/genre`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id, genre } = req.body;
-
-  if (!id || typeof id !== "number" || !genre || typeof genre !== "string") {
-    return res.status(400).json({
-      error: "Malformed request - check ID (is number) and genre (is string)",
-    });
-  }
-
-  const query = "UPDATE games SET genre = $2 WHERE id = $1";
-
-  try {
-    await pool.query(query, [id, genre]);
-
-    return res.status(201).json({
-      message: `ID: ${id} updated`,
-      data: `genre: ${genre}`,
-    });
-  } catch (error) {
-    console.error("Error updating genre", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^ PUT api/games/update/status
-// Update status for ID
-
-router.put(`/update/status`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id, status } = req.body;
-
-  if (!id || typeof id !== "number" || !status || typeof status !== "string") {
-    return res.status(400).json({
-      error: "Malformed request - check ID (is number) and status (is string)",
-    });
-  }
-
-  const query = "UPDATE games SET status = $2 WHERE id = $1";
-
-  try {
-    await pool.query(query, [id, status]);
-
-    return res.status(201).json({
-      message: `ID: ${id} updated`,
-      data: `status: ${status}`,
-    });
-  } catch (error) {
-    console.error("Error updating status", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^ PUT api/games/update/notes
-// Update notes for ID
-
-router.put(`/update/notes`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id, notes } = req.body;
-
-  if (!id || typeof id !== "number" || !notes || typeof notes !== "string") {
-    return res.status(400).json({
-      error: "Malformed request - check ID (is number) and notes (is string)",
-    });
-  }
-
-  const query = "UPDATE games SET notes = $2 WHERE id = $1";
-
-  try {
-    await pool.query(query, [id, notes]);
-
-    return res.status(201).json({
-      message: `ID: ${id} updated`,
-      data: `notes: ${notes}`,
-    });
-  } catch (error) {
-    console.error("Error updating notes", error);
-    return res.sendStatus(500);
-  }
-});
-
 // * DELETE
 
 //^ DELETE api/games/delete
 // Delete entire game
 
-router.delete(`/delete`, async (req, res) => {
+router.delete(`/`, async (req, res) => {
   if (!req.body) {
     return res.status(400).json({
       message: "Request body empty",
@@ -456,139 +253,6 @@ router.delete(`/delete`, async (req, res) => {
       .json({ message: `Row ${id} deleted`, deleted: result.rows[0] });
   } catch (error) {
     console.error("Error deleting game", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^DELETE api/games/delete/title
-//Delete title from game (technically, update row value to "")
-
-router.delete(`/delete/title`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      error: "Malformed request - check ID is number",
-      id: id,
-      string: title,
-    });
-  }
-
-  //inested of null, an empty string?
-  const query = `UPDATE games SET title = '' WHERE ID = $1 `;
-
-  try {
-    await pool.query(query, [id]);
-    return res.status(201).json({
-      message: `title of ID ${id} deleted`,
-    });
-  } catch (error) {
-    console.error("Error updating game", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^DELETE api/games/delete/description
-//Delete description from game
-
-router.delete(`/delete/description`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      error: "Malformed request - check ID is number",
-      id: id,
-    });
-  }
-
-  //inested of null, an empty string?
-  const query = `UPDATE games SET description = '' WHERE ID = $1 `;
-
-  try {
-    await pool.query(query, [id]);
-    return res.status(201).json({
-      message: `description of ID ${id} deleted`,
-    });
-  } catch (error) {
-    console.error("Error updating game", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^DELETE api/games/delete/image
-//Delete image from game
-
-router.delete(`/delete/image`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      error: "Malformed request - check ID is number",
-      id: id,
-    });
-  }
-
-  //inested of null, an empty string?
-  const query = `UPDATE games SET image = '' WHERE ID = $1 `;
-
-  try {
-    await pool.query(query, [id]);
-    return res.status(201).json({
-      message: `image of ID ${id} deleted`,
-    });
-  } catch (error) {
-    console.error("Error updating game", error);
-    return res.sendStatus(500);
-  }
-});
-
-//^DELETE api/games/delete/genre
-//Delete genre from game
-
-router.delete(`/delete/genre`, async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({
-      message: "Request body empty",
-    });
-  }
-
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      error: "Malformed request - check ID is number",
-      id: id,
-    });
-  }
-
-  //inested of null, an empty string?
-  const query = `UPDATE games SET genre = '' WHERE ID = $1 `;
-
-  try {
-    await pool.query(query, [id]);
-    return res.status(201).json({
-      message: `genre of ID ${id} deleted`,
-    });
-  } catch (error) {
-    console.error("Error updating game", error);
     return res.sendStatus(500);
   }
 });
